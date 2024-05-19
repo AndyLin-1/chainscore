@@ -3,9 +3,10 @@
 import { useState, useContext, useEffect } from 'react';
 import styles from './TeacherDashboard.module.css';
 import { FaClipboardList } from 'react-icons/fa';
+import { SVGProps } from 'react';
+import { Icon } from '@iconify/react';
 import testData from './testData.json'
 import { NearContext } from '@/context';
-
 
 export default function TeacherDashboard() {
   const { signedAccountId } = useContext(NearContext);
@@ -48,15 +49,22 @@ export default function TeacherDashboard() {
   return (
     <div className={styles.container}>
       <div className={styles.sidebar}>
-        <button className={styles.sidebarButton}>
-          <FaClipboardList className={styles.sidebarButtonIcon} />
+        <button className={`${styles.sidebarButton} ${activeTab === 'active' ? styles.active : ''}`}
+              onClick={() => setActiveTab('active')}>
+          <Icon icon="mdi:form" className={styles.sidebarButtonIcon}/>
           Tests
+        </button>
+        <button className={`${styles.sidebarButton} ${activeTab === 'inactive' ? styles.active : ''}`}
+              onClick={() => setActiveTab('inactive')}>
+          <Icon icon="material-symbols:history" className={styles.sidebarButtonIcon}/>
+          Sent History
         </button>
       </div>
       <main className={styles.mainContent}>
         <div className={styles.header}>
-          <h1>Teacher Dashboard</h1>
+          <h1>Review your tests</h1>
         </div>
+
         <div className={styles.header}>
           <ul className={styles.tabs}>
             <li
@@ -72,7 +80,7 @@ export default function TeacherDashboard() {
               Inactive Tests
             </li>
           </ul>
-          <button className={styles.button} onClick={handleButtonClick}>Add Test</button>
+          <button className={styles.button} onClick={handleButtonClick}>Create a test</button>
         </div>
         <div>
           {activeTab === 'active' ? (
@@ -98,8 +106,12 @@ export default function TeacherDashboard() {
         <div className={styles.modal}>
           <div className={styles.modalContent}>
             <div className={styles.modalHeader}>
-              <h5>Add Test</h5>
-              <button type="button" className={styles.closeButton} onClick={handleClosePopout}>&times;</button>
+              <h5>Add required fields for your test</h5>
+
+              <button onClick={handleClosePopout} className={styles.closeButton}>
+                <Icon icon="material-symbols:close" className={styles.sidebarButtonIcon}/>
+              </button>
+              
             </div>
             <div className={styles.modalBody}>
               <input
@@ -124,7 +136,6 @@ export default function TeacherDashboard() {
               />
             </div>
             <div className={styles.modalFooter}>
-              <button className={styles.button} onClick={handleClosePopout}>Close</button>
               <button className={styles.button} onClick={handleContinue}>Continue</button>
             </div>
           </div>
