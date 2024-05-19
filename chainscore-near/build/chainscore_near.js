@@ -812,46 +812,153 @@ function NearBindgen({
   };
 }
 
-var _dec, _dec2, _dec3, _dec4, _class, _class2, _dec5, _class3;
-let TestContract = (_dec = NearBindgen({}), _dec2 = call({}), _dec3 = view(), _dec4 = call({}), _dec(_class = (_class2 = class TestContract {
-  constructor(teacher, student) {
+var _dec, _dec2, _dec3, _dec4, _dec5, _dec6, _dec7, _dec8, _class, _class2, _dec9, _class3, _dec10, _class4, _dec11, _class5;
+let TestContract = (_dec = NearBindgen({}), _dec2 = call({}), _dec3 = view(), _dec4 = call({}), _dec5 = call({}), _dec6 = call({}), _dec7 = call({}), _dec8 = call({}), _dec(_class = (_class2 = class TestContract {
+  constructor() {
     this.tests = new UnorderedMap('tests');
     this.teacher = 'chainscore1.testnet';
-    this.student = 'chainscore2.testnet';
   }
   create_test({
-    id,
-    encryptedTest
+    name,
+    questions,
+    startDate,
+    endDate
   }) {
     if (predecessorAccountId() !== this.teacher) {
       throw new Error("Only teachers can create tests");
     }
-    if (this.tests.get(id)) {
-      throw new Error("Test with this ID already exists");
+    const id = name + '_' + startDate.toString(); // Generating unique ID based on test name and start date
+    if (this.tests.get(id) !== null) {
+      throw new Error("Test with this name and start date already exists");
     }
-    const test = new Test(id, encryptedTest);
+    const test = new Test(name, questions, startDate, endDate);
     this.tests.set(id, test);
   }
   get_test({
     id
   }) {
-    return this.tests.get(id);
+    const test = this.tests.get(id);
+    if (test !== null) {
+      return new testInfo(test.name, test.questions, test.startDate, test.endDate);
+    }
+    return null;
+  }
+  get_all_tests({
+    teacherAccountId
+  }) {
+    if (predecessorAccountId() !== teacherAccountId) {
+      throw new Error('Unauthorized to access all tests');
+    }
+    const allTests = [];
+    const testsKeys = this.tests.keys({
+      start: '',
+      limit: 10
+    });
+    for (let i = 0; i < testsKeys.length; i++) {
+      const test = this.tests.get(testsKeys[i]);
+      if (test !== null) {
+        allTests.push(new testInfo(test.name, test.questions, test.startDate, test.endDate));
+      }
+    }
+    return allTests;
+  }
+  get_all_open_tests() {
+    const allTests = [];
+    const testsKeys = this.tests.keys({
+      start: '',
+      limit: 10
+    });
+    for (let i = 0; i < testsKeys.length; i++) {
+      const test = this.tests.get(testsKeys[i]);
+      if (test !== null) {
+        allTests.push(new testInfo(test.name, test.questions, test.startDate, test.endDate));
+      }
+    }
+    return allTests;
   }
   submit_response({
     id,
     encryptedResponse
   }) {
     const test = this.tests.get(id);
-    if (!test) {
+    if (test === null) {
       throw new Error('Test not found');
     }
-    if (this.teacher === predecessorAccountId()) {
+    if (predecessorAccountId() === this.teacher) {
       throw new Error('Teacher cannot submit a response');
     }
-    test.encryptedResponse = encryptedResponse;
+    if (test.endDate.getTime() < Date.now()) {
+      throw new Error('Test submission period has ended');
+    }
+    test.studentResponses.set(predecessorAccountId(), encryptedResponse);
     this.tests.set(id, test);
   }
-}, (_applyDecoratedDescriptor(_class2.prototype, "create_test", [_dec2], Object.getOwnPropertyDescriptor(_class2.prototype, "create_test"), _class2.prototype), _applyDecoratedDescriptor(_class2.prototype, "get_test", [_dec3], Object.getOwnPropertyDescriptor(_class2.prototype, "get_test"), _class2.prototype), _applyDecoratedDescriptor(_class2.prototype, "submit_response", [_dec4], Object.getOwnPropertyDescriptor(_class2.prototype, "submit_response"), _class2.prototype)), _class2)) || _class);
+  write_student_marks({
+    id,
+    studentId,
+    marks
+  }) {
+    const test = this.tests.get(id);
+    if (test === null) {
+      throw new Error('Test not found');
+    }
+    if (predecessorAccountId() !== this.teacher) {
+      throw new Error('Only teachers can write student marks');
+    }
+    if (test.studentResponses.get(studentId) === null) {
+      throw new Error('No response submitted by this student for the test');
+    }
+    test.studentMarks.set(studentId, marks);
+    this.tests.set(id, test);
+  }
+  view_student_marks({
+    studentId
+  }) {
+    if (predecessorAccountId() !== this.teacher && predecessorAccountId() !== studentId) {
+      throw new Error('Unauthorized to view marks for this test');
+    }
+    const allMarks = [];
+    const testsKeys = this.tests.keys({
+      start: '',
+      limit: 10
+    }); // Assuming a reasonable limit
+    for (let i = 0; i < testsKeys.length; i++) {
+      const test = this.tests.get(testsKeys[i]);
+      if (test !== null && test.studentMarks.get(studentId) !== null) {
+        allMarks.push(new testGrade(test.name, new Date(test.endDate).getTime(), true, test.studentMarks.get(studentId)));
+      }
+    }
+    return allMarks;
+  }
+}, (_applyDecoratedDescriptor(_class2.prototype, "create_test", [_dec2], Object.getOwnPropertyDescriptor(_class2.prototype, "create_test"), _class2.prototype), _applyDecoratedDescriptor(_class2.prototype, "get_test", [_dec3], Object.getOwnPropertyDescriptor(_class2.prototype, "get_test"), _class2.prototype), _applyDecoratedDescriptor(_class2.prototype, "get_all_tests", [_dec4], Object.getOwnPropertyDescriptor(_class2.prototype, "get_all_tests"), _class2.prototype), _applyDecoratedDescriptor(_class2.prototype, "get_all_open_tests", [_dec5], Object.getOwnPropertyDescriptor(_class2.prototype, "get_all_open_tests"), _class2.prototype), _applyDecoratedDescriptor(_class2.prototype, "submit_response", [_dec6], Object.getOwnPropertyDescriptor(_class2.prototype, "submit_response"), _class2.prototype), _applyDecoratedDescriptor(_class2.prototype, "write_student_marks", [_dec7], Object.getOwnPropertyDescriptor(_class2.prototype, "write_student_marks"), _class2.prototype), _applyDecoratedDescriptor(_class2.prototype, "view_student_marks", [_dec8], Object.getOwnPropertyDescriptor(_class2.prototype, "view_student_marks"), _class2.prototype)), _class2)) || _class);
+function view_student_marks() {
+  const _state = TestContract._getState();
+  if (!_state && TestContract._requireInit()) {
+    throw new Error("Contract must be initialized");
+  }
+  const _contract = TestContract._create();
+  if (_state) {
+    TestContract._reconstruct(_contract, _state);
+  }
+  const _args = TestContract._getArgs();
+  const _result = _contract.view_student_marks(_args);
+  TestContract._saveToStorage(_contract);
+  if (_result !== undefined) if (_result && _result.constructor && _result.constructor.name === "NearPromise") _result.onReturn();else env.value_return(TestContract._serialize(_result, true));
+}
+function write_student_marks() {
+  const _state = TestContract._getState();
+  if (!_state && TestContract._requireInit()) {
+    throw new Error("Contract must be initialized");
+  }
+  const _contract = TestContract._create();
+  if (_state) {
+    TestContract._reconstruct(_contract, _state);
+  }
+  const _args = TestContract._getArgs();
+  const _result = _contract.write_student_marks(_args);
+  TestContract._saveToStorage(_contract);
+  if (_result !== undefined) if (_result && _result.constructor && _result.constructor.name === "NearPromise") _result.onReturn();else env.value_return(TestContract._serialize(_result, true));
+}
 function submit_response() {
   const _state = TestContract._getState();
   if (!_state && TestContract._requireInit()) {
@@ -863,6 +970,34 @@ function submit_response() {
   }
   const _args = TestContract._getArgs();
   const _result = _contract.submit_response(_args);
+  TestContract._saveToStorage(_contract);
+  if (_result !== undefined) if (_result && _result.constructor && _result.constructor.name === "NearPromise") _result.onReturn();else env.value_return(TestContract._serialize(_result, true));
+}
+function get_all_open_tests() {
+  const _state = TestContract._getState();
+  if (!_state && TestContract._requireInit()) {
+    throw new Error("Contract must be initialized");
+  }
+  const _contract = TestContract._create();
+  if (_state) {
+    TestContract._reconstruct(_contract, _state);
+  }
+  const _args = TestContract._getArgs();
+  const _result = _contract.get_all_open_tests(_args);
+  TestContract._saveToStorage(_contract);
+  if (_result !== undefined) if (_result && _result.constructor && _result.constructor.name === "NearPromise") _result.onReturn();else env.value_return(TestContract._serialize(_result, true));
+}
+function get_all_tests() {
+  const _state = TestContract._getState();
+  if (!_state && TestContract._requireInit()) {
+    throw new Error("Contract must be initialized");
+  }
+  const _contract = TestContract._create();
+  if (_state) {
+    TestContract._reconstruct(_contract, _state);
+  }
+  const _args = TestContract._getArgs();
+  const _result = _contract.get_all_tests(_args);
   TestContract._saveToStorage(_contract);
   if (_result !== undefined) if (_result && _result.constructor && _result.constructor.name === "NearPromise") _result.onReturn();else env.value_return(TestContract._serialize(_result, true));
 }
@@ -893,13 +1028,35 @@ function create_test() {
   TestContract._saveToStorage(_contract);
   if (_result !== undefined) if (_result && _result.constructor && _result.constructor.name === "NearPromise") _result.onReturn();else env.value_return(TestContract._serialize(_result, true));
 }
-let Test = (_dec5 = NearBindgen({}), _dec5(_class3 = class Test {
-  constructor(id, encryptedTest) {
-    this.id = id;
-    this.encryptedTest = encryptedTest;
-    this.encryptedResponse = null;
+let Test = (_dec9 = NearBindgen({}), _dec9(_class3 = class Test {
+  // Map of student wallet ids to answers
+  // Map of student ids to marks
+
+  constructor(name, questions, startDate, endDate) {
+    this.name = name;
+    this.questions = questions;
+    this.startDate = startDate;
+    this.endDate = endDate;
+    this.studentResponses = new UnorderedMap('sr_' + name); // Unique storage for each test
+    this.studentMarks = new UnorderedMap('sm_' + name); // Unique storage for each test
   }
 }) || _class3);
+let testInfo = (_dec10 = NearBindgen({}), _dec10(_class4 = class testInfo {
+  constructor(name, questions, startDate, endDate) {
+    this.name = name;
+    this.questions = questions;
+    this.startDate = startDate;
+    this.endDate = endDate;
+  }
+}) || _class4);
+let testGrade = (_dec11 = NearBindgen({}), _dec11(_class5 = class testGrade {
+  constructor(name, deadlineDate, graded, grade) {
+    this.name = name;
+    this.deadlineDate = deadlineDate;
+    this.graded = graded;
+    this.grade = grade;
+  }
+}) || _class5);
 
-export { create_test, get_test, submit_response };
+export { create_test, get_all_open_tests, get_all_tests, get_test, submit_response, view_student_marks, write_student_marks };
 //# sourceMappingURL=chainscore_near.js.map

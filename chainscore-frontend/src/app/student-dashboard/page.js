@@ -3,32 +3,58 @@
 import { useState, useContext, useEffect } from 'react';
 import styles from './studentdashboard.module.css';
 import { FaClipboardList } from 'react-icons/fa';
-import testData from './testData.json';
 import { NearContext } from '@/context';
+import { ChainScoreContract } from '@/config';
 
+const CONTRACT = ChainScoreContract;
 
 export default function StudentDashboard() {
-    const { signedAccountId } = useContext(NearContext);
-    const [loading, setLoading] = useState(true);
-  
-    useEffect(() => {
-      setLoading(false);
-    }, [signedAccountId]);
-
-    useEffect(() => {
-        if (!loading && !signedAccountId) {
-          window.location.href = '/';
-        }
-      }, [loading, signedAccountId]);
-
+  const { wallet, signedAccountId } = useContext(NearContext);
+  const [loading, setLoading] = useState(true);
+  const [testData, setTestData] = useState([]);
   const [activeTab, setActiveTab] = useState('open');
-  const currentDate = new Date();
-  const openTests = testData.tests.filter(test => new Date(test.deadlineDate) >= currentDate && !test.graded);
-  const gradedTests = testData.tests.filter(test => test.graded);
+  const [openTests, setOpenTests] = useState([]);
+  const [gradedTests, setGradedTests] = useState([]);
 
-  
+  useEffect(() => {
+    if (!loading && !signedAccountId) {
+      window.location.href = '/';
+    }
+  }, [loading, signedAccountId]);
+
+useEffect(() => {
+  async function fetchTestData() {
+    try {
+      let data = await wallet.callMethod({
+        contractId: CONTRACT,
+        method: 'get_all_open_tests',
+        args: {} 
+      });
+
+      if (!data) {
+        data = [];
+      }
+
+      const currentDate = new Date();
+      const openTests = data.filter(test => new Date(test.deadlineDate) >= currentDate && !test.graded);
+      const gradedTests = data.filter(test => test.graded);
+
+      setTestData({ open: openTests, graded: gradedTests });
+    } catch (error) {
+      console.error('Failed to fetch test data:', error);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  if (signedAccountId) {
+    fetchTestData();
+  }
+}, [signedAccountId, wallet]);
+
+
   const handleTestClick = (testId) => {
-    window.location.href  = `/student-test-board${testId}`; 
+    window.location.href = `/student-test-board${testId}`;
   };
 
   return (

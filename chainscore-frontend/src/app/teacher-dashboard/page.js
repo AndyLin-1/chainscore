@@ -1,32 +1,62 @@
 'use client';
-
 import { useState, useContext, useEffect } from 'react';
 import styles from './TeacherDashboard.module.css';
-import { FaClipboardList } from 'react-icons/fa';
-import { SVGProps } from 'react';
 import { Icon } from '@iconify/react';
-import testData from './testData.json'
 import { NearContext } from '@/context';
+import { ChainScoreContract } from '@/config';
+
+const CONTRACT = ChainScoreContract;
 
 export default function TeacherDashboard() {
-  const { signedAccountId } = useContext(NearContext);
+  const { wallet, signedAccountId } = useContext(NearContext);
   const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    setLoading(false);
-  }, [signedAccountId]);
-  
-  useEffect(() => {
-      if (!loading && !signedAccountId) {
-        window.location.href = '/';
-      }
-    }, [loading, signedAccountId]);
-
+  const [testData, setTestData] = useState({ active: [], inactive: [] });
   const [activeTab, setActiveTab] = useState('active');
   const [showPopout, setShowPopout] = useState(false);
   const [testName, setTestName] = useState('');
   const [startTime, setStartTime] = useState('');
   const [endTime, setEndTime] = useState('');
+  const [activeTests, setActiveTests] = useState([]);
+  const [inactiveTests, setInactiveTests] = useState([]);
+  
+
+  useEffect(() => {
+    async function fetchTestData() {
+      try {
+        let data = await wallet.callMethod({
+          contractId: CONTRACT,
+          method: 'get_all_tests',
+          args: { teacherAccountId: signedAccountId }
+        });
+
+        if (!data) {
+          data = [];
+        }
+
+        const currentDate = new Date();
+        const activeTests = data.filter(test => new Date(test.endDate) >= currentDate);
+        const inactiveTests = data.filter(test => new Date(test.endDate) < currentDate);
+
+        setTestData({ active: activeTests, inactive: inactiveTests });
+      } catch (error) {
+        console.error('Failed to fetch test data:', error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    if (signedAccountId) {
+      fetchTestData();
+    }
+  }, [signedAccountId, wallet]);
+
+  useEffect(() => {
+    const currentDate = new Date();
+    const filteredActiveTests = testData.active.filter(test => new Date(test.endDate) >= currentDate);
+    const filteredInactiveTests = testData.inactive.filter(test => new Date(test.endDate) < currentDate);
+    setActiveTests(filteredActiveTests);
+    setInactiveTests(filteredInactiveTests);
+  }, [testData]);
 
   const handleButtonClick = () => {
     setShowPopout(true);
@@ -37,28 +67,33 @@ export default function TeacherDashboard() {
   };
 
   const handleContinue = () => {
-    if(!(testName == "" || startTime == "" || endTime == "")) {
-      window.location.href  = `/teacher-test-create?testName=${testName}&startTime=${startTime}&endTime=${endTime}`; 
-    } 
+    if (!(testName === "" || startTime === "" || endTime === "")) {
+      window.location.href = `/teacher-test-create?testName=${testName}&startTime=${startTime}&endTime=${endTime}`;
+    }
   };
-
-  const currentDate = new Date();
-  const activeTests = testData.tests.filter(test => new Date(test.deadlineDate) >= currentDate);
-  const inactiveTests = testData.tests.filter(test => new Date(test.deadlineDate) < currentDate);
-
+  
   return (
     <div className={styles.container}>
       <div className={styles.sidebar}>
-        <button className={`${styles.sidebarButton} ${activeTab === 'active' ? styles.active : ''}`}
-              onClick={() => setActiveTab('active')}>
-          <Icon icon="mdi:form" className={styles.sidebarButtonIcon}/>
-          Tests
-        </button>
-        <button className={`${styles.sidebarButton} ${activeTab === 'inactive' ? styles.active : ''}`}
-              onClick={() => setActiveTab('inactive')}>
-          <Icon icon="material-symbols:history" className={styles.sidebarButtonIcon}/>
-          Sent History
-        </button>
+        {/* Conditional rendering */}
+        {!loading && (
+          <>
+            <button
+              className={`${styles.sidebarButton} ${activeTab === 'active' ? styles.active : ''}`}
+              onClick={() => setActiveTab('active')}
+            >
+              <Icon icon="mdi:form" className={styles.sidebarButtonIcon}/>
+              Tests
+            </button>
+            <button
+              className={`${styles.sidebarButton} ${activeTab === 'inactive' ? styles.active : ''}`}
+              onClick={() => setActiveTab('inactive')}
+            >
+              <Icon icon="material-symbols:history" className={styles.sidebarButtonIcon}/>
+              Sent History
+            </button>
+          </>
+        )}
       </div>
       <main className={styles.mainContent}>
         <div className={styles.header}>
@@ -100,7 +135,7 @@ export default function TeacherDashboard() {
           )}
         </div>
       </main>
-
+      
       {/* Popout modal */}
       {showPopout && (
         <div className={styles.modal}>

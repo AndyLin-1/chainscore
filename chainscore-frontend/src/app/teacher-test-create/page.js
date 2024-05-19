@@ -4,11 +4,13 @@ import styles from './teachertestcreate.module.css';
 import { useEffect, useState, useContext } from 'react';
 import queryString from 'query-string';
 import { NearContext } from '@/context';
+import { ChainScoreContract } from '@/config';
 
+const CONTRACT = ChainScoreContract;
 
 
 const TeacherTestCreate = () => {
-  const { signedAccountId } = useContext(NearContext);
+  const { wallet, signedAccountId } = useContext(NearContext);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -62,15 +64,16 @@ const TeacherTestCreate = () => {
     setQuestions(questions.filter((_, i) => i !== index));
   };
 
-  const handleSendTest = () => {
-    const testContent = {
-      testName,
-      startTime,
-      endTime,
-      questions
-    };
-    const jsonContent = JSON.stringify(testContent);
-    console.log(jsonContent);
+  const handleSendTest = async () => {
+    await wallet.callMethod({ contractId: CONTRACT, method: 'create_test', args: { name: testName, 
+      questions: JSON.stringify(questions),
+      startDate: new Date(startTime).getTime(),
+      endDate: new Date(endTime).getTime() } });
+      window.location.href = '/teacher-dashboard';
+  };
+
+  const capitalizeFirstLetter = (string) => {
+    return string.charAt(0).toUpperCase() + string.slice(1);
   };
 
   return (
@@ -113,7 +116,7 @@ const TeacherTestCreate = () => {
           {questions.map((question, index) => (
             <div key={index} className={styles.questionBox}>
               <div className={styles.questionHeader}>
-                <h4>{question.type.replace(/([A-Z])/g, ' $1').trim()}</h4>
+                <h4>{capitalizeFirstLetter(question.type)}</h4>
                 <button className={styles.deleteButton} onClick={() => deleteQuestion(index)}>Delete</button>
               </div>
               <input

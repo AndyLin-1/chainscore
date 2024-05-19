@@ -1,4 +1,4 @@
-import { NearBindgen, near, call, view, UnorderedMap } from 'near-sdk-js';
+import { NearBindgen, near, call, view, UnorderedMap, UnknownCurve} from 'near-sdk-js';
 
 @NearBindgen({})
 class TestContract {
@@ -33,6 +33,39 @@ class TestContract {
   }
 
   @call({})
+  get_all_tests({ teacherAccountId }: { teacherAccountId: string }): testInfo[] {
+    if (near.predecessorAccountId() !== teacherAccountId) {
+      throw new Error('Unauthorized to access all tests');
+    }
+
+    const allTests: testInfo[] = [];
+    const testsKeys = this.tests.keys({ start: '', limit: 10 });
+    for (let i = 0; i < testsKeys.length; i++) {
+      const test = this.tests.get(testsKeys[i]);
+      if (test !== null) {
+        allTests.push(new testInfo(test.name, test.questions, test.startDate, test.endDate));
+      }
+    }
+
+    return allTests;
+  }
+
+  @call({})
+  get_all_open_tests( ): testInfo[] {
+    const allTests: testInfo[] = [];
+    const testsKeys = this.tests.keys({ start: '', limit: 10 });
+    for (let i = 0; i < testsKeys.length; i++) {
+      const test = this.tests.get(testsKeys[i]);
+      if (test !== null) {
+            allTests.push(new testInfo(test.name, test.questions, test.startDate, test.endDate));
+        }
+    }
+    return allTests;
+  }
+  
+
+
+  @call({})
   submit_response({ id, encryptedResponse }: { id: string; encryptedResponse: string }) {
     const test = this.tests.get(id);
     if (test === null) {
@@ -64,16 +97,22 @@ class TestContract {
     this.tests.set(id, test);
   }
 
-  @view({})
-  view_student_marks({ id }: { id: string }): UnorderedMap<number> {
-    const test = this.tests.get(id);
-    if (test === null) {
-      throw new Error('Test not found');
-    }
-    if (near.predecessorAccountId() !== this.teacher && near.predecessorAccountId() !== id) {
+  @call({})
+  view_student_marks({ studentId }: { studentId: string }): testGrade [] {
+    if (near.predecessorAccountId() !== this.teacher && near.predecessorAccountId() !== studentId) {
       throw new Error('Unauthorized to view marks for this test');
     }
-    return test.studentMarks;
+    const allMarks: testGrade[] = [];
+
+    const testsKeys = this.tests.keys({ start: '', limit: 10 }); // Assuming a reasonable limit
+    for (let i = 0; i < testsKeys.length; i++) {
+      const test = this.tests.get(testsKeys[i]);
+      if (test !== null && test.studentMarks.get(studentId) !== null) {
+        allMarks.push(new testGrade(test.name, new Date(test.endDate).getTime(), true, test.studentMarks.get(studentId)));
+      }
+    }
+
+    return allMarks;
   }
 }
 
@@ -110,3 +149,19 @@ class testInfo {
     this.endDate = endDate;
   }
 }
+
+@NearBindgen({})
+class testGrade {
+  name: string;
+  deadlineDate: number;
+  graded: boolean;
+  grade: number;
+
+  constructor(name: string, deadlineDate: number, graded: boolean, grade: number) {
+    this.name = name;
+    this.deadlineDate = deadlineDate;
+    this.graded = graded;
+    this.grade = grade;
+  }
+}
+
