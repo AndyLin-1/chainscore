@@ -4,8 +4,10 @@ import { useState } from 'react';
 import styles from './TeacherDashboard.module.css';
 import { FaClipboardList } from 'react-icons/fa';
 import testData from './testData.json';
+import { useRouter } from 'next/router';
 
 export default function TeacherDashboard() {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState('active');
   const [showPopout, setShowPopout] = useState(false);
   const [testName, setTestName] = useState('');
@@ -25,10 +27,10 @@ export default function TeacherDashboard() {
     console.log('Start Time:', startTime);
     console.log('End Time:', endTime);
 
-    // router.push({
-    //   pathname: '/teacher-test-create', 
-    //   query: { testName, startTime, endTime },
-    // });
+    router.push({
+      pathname: '/teacher-test-create', 
+      query: { testName, startTime, endTime },
+    });
   };
 
   const currentDate = new Date();
