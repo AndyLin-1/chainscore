@@ -3,11 +3,10 @@
 import { useState } from 'react';
 import styles from './TeacherDashboard.module.css';
 import { FaClipboardList } from 'react-icons/fa';
-import testData from './testData.json';
-import { useRouter } from 'next/router';
+import testData from './testData.json'
+
 
 export default function TeacherDashboard() {
-  const router = useRouter();
   const [activeTab, setActiveTab] = useState('active');
   const [showPopout, setShowPopout] = useState(false);
   const [testName, setTestName] = useState('');
@@ -23,14 +22,9 @@ export default function TeacherDashboard() {
   };
 
   const handleContinue = () => {
-    console.log('Test Name:', testName);
-    console.log('Start Time:', startTime);
-    console.log('End Time:', endTime);
-
-    router.push({
-      pathname: '/teacher-test-create', 
-      query: { testName, startTime, endTime },
-    });
+    if(!(testName == "" || startTime == "" || endTime == "")) {
+      window.location.href  = `/teacher-test-create?testName=${testName}&startTime=${startTime}&endTime=${endTime}`; 
+    } 
   };
 
   const currentDate = new Date();
@@ -71,7 +65,6 @@ export default function TeacherDashboard() {
             activeTests.map((test, index) => (
               <div key={index} className={styles.testBox}>
                 <h3>{test.name}</h3>
-                <p>Published Date: {test.publishedDate}</p>
                 <p>Deadline Date: {test.deadlineDate}</p>
               </div>
             ))
