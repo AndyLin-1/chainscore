@@ -1,9 +1,8 @@
 import Image from 'next/image';
-import Link from 'next/link';
 import { useEffect, useState, useContext } from 'react';
-
 import { NearContext } from '@/context';
-import NearLogo from '/public/near-logo.svg';
+import NearLogo from '/public/LogoGroup.png';
+import styles from './Navigation.module.css';
 
 export const Navigation = () => {
   const { signedAccountId, wallet } = useContext(NearContext);
@@ -18,23 +17,20 @@ export const Navigation = () => {
       setLabel(`Logout ${signedAccountId}`);
     } else {
       setAction(() => wallet.signIn);
-      setLabel('Login');
+      setLabel('Login with a wallet');
     }
   }, [signedAccountId, wallet]);
 
   return (
-    <nav className="navbar navbar-expand-lg">
-      <div className="container-fluid d-flex justify-content-between align-items-center">
+    <nav className={`navbar navbar-expand-lg navbar-light bg-light ${styles['navbar-custom']}`}>
+      <div className="container-fluid">
         <div className="d-flex align-items-center">
-          <Link href="/" passHref legacyBehavior>
-            <Image priority src={NearLogo} alt="NEAR" width="30" height="24" className="d-inline-block align-text-top" />
-          </Link>
-          <div className="ms-3">
-            <span className="fw-bold">ChainScore</span> 
+          <div className="navbar-brand">
+            <Image src={NearLogo} alt="Near Logo" width={144} height={52} />
           </div>
         </div>
-        <div className='navbar-nav'>
-          <button className="btn btn-secondary" onClick={action}>{label}</button>
+        <div className="ms-auto">
+          <button className={`btn ${styles['custom-btn']}`} onClick={action}>{label}</button>
         </div>
       </div>
     </nav>

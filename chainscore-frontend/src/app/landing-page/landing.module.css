@@ -1,0 +1,19 @@
+.fullHeightBackground {
+    background-image: url('/Background.png');
+    height: 100vh;
+    background-size: cover;
+    background-position: center;
+    display: flex;
+    align-items: center;
+    text-align: center;
+    justify-content: center;
+    flex-direction: column;
+    padding-top: 80px;
+}
+
+.fullHeightBackground h1, 
+.fullHeightBackground h2, 
+.fullHeightBackground p {
+    margin: 0.5rem 0; 
+    color: white;
+}
