@@ -2,8 +2,24 @@
 
 import styles from './landing.module.css';
 import { useState, useEffect, useContext } from 'react';
+import { NearContext } from '@/context';
 
 export default function LandingPage() {
+    const { signedAccountId } = useContext(NearContext);
+    const [loading, setLoading] = useState(true);
+  
+    useEffect(() => {
+      setLoading(false);
+    }, [signedAccountId]);
+
+    useEffect(() => {
+        if (!loading) {
+          if(signedAccountId=="chainscore1.testnet") window.location.href = '/teacher-dashboard';
+          if(signedAccountId=="chainscore2.testnet") window.location.href = '/student-dashboard';
+          if(signedAccountId=="chainscore3.testnet") window.location.href = '/student-dashboard';
+        }
+      }, [loading, signedAccountId]);
+
     return (
         <main>
             <div className='w-100 text-end align-text-center'></div>

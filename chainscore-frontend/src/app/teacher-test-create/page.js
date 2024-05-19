@@ -1,11 +1,27 @@
 'use client';
 
 import styles from './teachertestcreate.module.css'; 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useContext } from 'react';
 import queryString from 'query-string';
+import { NearContext } from '@/context';
+
 
 
 const TeacherTestCreate = () => {
+  const { signedAccountId } = useContext(NearContext);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    setLoading(false);
+  }, [signedAccountId]);
+  
+  useEffect(() => {
+      if (!loading && !signedAccountId) {
+        window.location.href = '/';
+      }
+    }, [loading, signedAccountId]);
+
+
   const [testName, setTestName] = useState('');
   const [startTime, setStartTime] = useState('');
   const [endTime, setEndTime] = useState('');

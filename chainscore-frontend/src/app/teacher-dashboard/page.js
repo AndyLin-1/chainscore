@@ -1,12 +1,26 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useContext, useEffect } from 'react';
 import styles from './TeacherDashboard.module.css';
 import { FaClipboardList } from 'react-icons/fa';
 import testData from './testData.json'
+import { NearContext } from '@/context';
 
 
 export default function TeacherDashboard() {
+  const { signedAccountId } = useContext(NearContext);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    setLoading(false);
+  }, [signedAccountId]);
+  
+  useEffect(() => {
+      if (!loading && !signedAccountId) {
+        window.location.href = '/';
+      }
+    }, [loading, signedAccountId]);
+
   const [activeTab, setActiveTab] = useState('active');
   const [showPopout, setShowPopout] = useState(false);
   const [testName, setTestName] = useState('');

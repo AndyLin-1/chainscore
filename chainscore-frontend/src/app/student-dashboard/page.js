@@ -1,17 +1,32 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useContext, useEffect } from 'react';
 import styles from './studentdashboard.module.css';
 import { FaClipboardList } from 'react-icons/fa';
 import testData from './testData.json';
+import { NearContext } from '@/context';
+
 
 export default function StudentDashboard() {
-  const [activeTab, setActiveTab] = useState('open');
+    const { signedAccountId } = useContext(NearContext);
+    const [loading, setLoading] = useState(true);
+  
+    useEffect(() => {
+      setLoading(false);
+    }, [signedAccountId]);
 
+    useEffect(() => {
+        if (!loading && !signedAccountId) {
+          window.location.href = '/';
+        }
+      }, [loading, signedAccountId]);
+
+  const [activeTab, setActiveTab] = useState('open');
   const currentDate = new Date();
   const openTests = testData.tests.filter(test => new Date(test.deadlineDate) >= currentDate && !test.graded);
   const gradedTests = testData.tests.filter(test => test.graded);
 
+  
   const handleTestClick = (testId) => {
     window.location.href  = `/student-test-board${testId}`; 
   };
