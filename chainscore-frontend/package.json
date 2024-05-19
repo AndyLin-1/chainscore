@@ -1,5 +1,5 @@
 {
-  "name": "hello-near",
+  "name": "chainscore_testnet",
   "version": "1.0.0",
   "private": true,
   "engines": {
@@ -30,7 +30,8 @@
     "next": "14.2.0",
     "pino-pretty": "^11.0.0",
     "react": "^18",
-    "react-dom": "^18"
+    "react-dom": "^18",
+    "react-icons": "^5.2.1"
   },
   "overrides": {
     "near-api-js": "^3.0.4"

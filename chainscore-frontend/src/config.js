@@ -1,6 +1,5 @@
 const contractPerNetwork = {
-  mainnet: 'hello.near-examples.near',
-  testnet: 'hello.near-examples.testnet',
+  testnet: 'chainscore1.testnet',
 };
 
 const componentsPerNetwork = {
@@ -19,5 +18,5 @@ const componentsPerNetwork = {
 };
 
 export const NetworkId = 'testnet';
-export const HelloNearContract = contractPerNetwork[NetworkId];
+export const ChainScoreContract = contractPerNetwork[NetworkId];
 export const Components = componentsPerNetwork[NetworkId];

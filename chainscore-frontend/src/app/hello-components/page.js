@@ -1,7 +1,6 @@
 import dynamic from 'next/dynamic';
 
-import styles from '@/styles/app.module.css';
-import { Cards } from '@/components/cards';
+import styles from '@/app/app.module.css';
 import { Components } from '@/config';
 
 const Component = dynamic(() => import('@/components/vm'), {
@@ -36,10 +35,6 @@ export default function HelloComponents() {
           </div>
         </div>
         <hr />
-
-        <div className={styles.grid}>
-          <Cards />
-        </div>
       </main>
     </>
   );

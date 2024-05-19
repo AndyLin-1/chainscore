@@ -1,0 +1,3 @@
+DEFINE_NEAR_METHOD(create_test)
+DEFINE_NEAR_METHOD(get_test)
+DEFINE_NEAR_METHOD(submit_response)

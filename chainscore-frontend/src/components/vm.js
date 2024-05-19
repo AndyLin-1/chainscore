@@ -1,3 +1,5 @@
+'use client';
+
 import { useEffect, useContext } from 'react';
 import { useInitNear, Widget, EthersProviderContext } from 'near-social-vm';
 

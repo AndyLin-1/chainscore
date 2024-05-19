@@ -1,0 +1,21 @@
+{
+    "tests": [
+      {
+        "name": "Math Test 1",
+        "deadlineDate": "2024-06-01"
+      },
+      {
+        "name": "Science Test 1",
+        "deadlineDate": "2024-05-15"
+      },
+      {
+        "name": "History Test 1",
+        "deadlineDate": "2024-04-20"
+      },
+      {
+        "name": "Math Test 2",
+        "deadlineDate": "2024-03-01"
+      }
+    ]
+  }
+  
